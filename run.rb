@@ -20,8 +20,8 @@ email_content = grab_output do
 end
 
 Mail.deliver do
-  from 'Flight Deals <janaz@janaz.pl>'
-  to 'janaz9@gmail.com'
+  from 'Flight Deals <donotreply@no.such.domain>'
+  to ARGV[0]
   subject "Flight Deals for #{ARGV.join(',')}"
   delivery_method :sendmail
   text_part do
