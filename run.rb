@@ -15,14 +15,17 @@ def grab_output
   end
 end
 
+email = ARGV.shift
+keywords = ARGV
+
 email_content = grab_output do
-  ap FlightDeals.specials_to(*ARGV), :plain => true
+  ap FlightDeals.specials_to(*keywords), :plain => true
 end
 
 Mail.deliver do
   from 'Flight Deals <donotreply@no.such.domain>'
-  to ARGV[0]
-  subject "Flight Deals for #{ARGV.join(',')}"
+  to email
+  subject "Flight Deals for #{keywords.join(',')}"
   delivery_method :sendmail
   text_part do
     body email_content
