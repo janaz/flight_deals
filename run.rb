@@ -15,7 +15,7 @@ def grab_output
   end
 end
 
-email = ARGV.shift
+to_email = ARGV.shift
 keywords = ARGV
 
 email_content = grab_output do
@@ -23,8 +23,8 @@ email_content = grab_output do
 end
 
 Mail.deliver do
-  from 'Flight Deals <donotreply@no.such.domain>'
-  to email
+  from 'Flight Deals <flightdeals@wombat.janaz.pl>'
+  to to_email
   subject "Flight Deals for #{keywords.join(',')}"
   delivery_method :sendmail
   text_part do
@@ -36,3 +36,4 @@ Mail.deliver do
     body "<pre style='font-size: 13px;'>\n#{email_content}\n</pre>\n"
   end
 end
+puts email_content
