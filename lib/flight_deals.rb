@@ -101,7 +101,7 @@ class FlightDeals
 
     def qantas_specials
       html = Nokogiri::HTML.parse(qantas_specials_response)
-      html.css('.flightSpecialsResults .resultWrap .resultDetails .detail').inject([]) do |mem,row|
+      html.css('.flightSpecialsResults .resultWrap .resultDetails .detail').inject([]) do |mem, row|
         dst = row.css('h3')
         dst.css('small').remove
         dst.css('span').remove
@@ -116,7 +116,82 @@ class FlightDeals
     end
 
     def __all_specials
-      qatar_special + emirates_special + qantas_specials
+      qatar_special + emirates_special + qantas_specials + zuji_specials + air_china_specials
+    end
+
+    def zuji_specials_response
+      url = 'http://www.zuji.com.au/site/travel_deals/promotions/flights-hotels-holidays-on-sale.html?skin=enau.zuji.com.au'
+      options = {
+          :timeout => 5,
+
+          :headers => {
+              'Referer' => url,
+              'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1479.0 Safari/537.36',
+          },
+      }
+      @zuji_specials_response ||= HTTParty.get(url, options)
+
+    end
+
+    def zuji_specials
+      html = Nokogiri::HTML.parse(zuji_specials_response)
+      html.css('.inner .bd table.mcdeal-list').inject([]) do |mem, row|
+        td1 = row.css('td')[1]
+        dest = td1.css('a').remove.text
+        rest = td1.text.strip.match(%r((.*?)Book by:(.*?)Travel dates:(.*)))
+        h = {
+            :from => rest[1].to_s.strip,
+            :destination => dest,
+            :price => row.css('td')[2].text,
+            :book_by => rest[2].to_s.strip,
+            :depart => rest[3].to_s.strip,
+            :airways => 'ZUJI'
+        }
+        mem << h
+      end
+
+    end
+
+    def air_china_specials_response
+      url = 'http://www.airchina.com.au/en/promotions/flights.html'
+      options = {
+          :timeout => 5,
+          :headers => {
+              'Referer' => url,
+              'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1479.0 Safari/537.36',
+          },
+      }
+      @air_china_specials_response ||= HTTParty.get(url, options)
+    end
+
+    def air_china_specials
+      air_china_specials_for_content('#tcontent1',0,'Business') +
+      air_china_specials_for_content('#tcontent1',1,'Economy') +
+      air_china_specials_for_content('#tcontent2',0,'Business') +
+      air_china_specials_for_content('#tcontent2',1,'Economy')
+    end
+
+    def air_china_specials_for_content(content, tab_num, cl)
+      html = Nokogiri::HTML.parse(air_china_specials_response)
+      tables = html.css(content + ' table')
+      rows = tables[tab_num].css('tr')
+      rows.shift
+      rows.inject([]) do |mem, row|
+        cols = row.css('td')
+        if (cols.size>=3)
+          (from, to) = cols[0].text.split('-', 2)
+          h = {
+              :from => from,
+              :destination => to,
+              :price => cols[1].text,
+              :depart => cols[2].text,
+              :class => cl,
+              :airways => 'AIR CHINA'
+          }
+          mem << h
+        end
+        mem
+      end
     end
 
 
@@ -132,7 +207,7 @@ class FlightDeals
     end
 
     def specials_to(*dst)
-      all_specials.select { |s| dst.any?{|d| s[:destination].include?(d)} }
+      all_specials.select { |s| dst.any? { |d| s[:destination].include?(d) } }
     end
   end
 end

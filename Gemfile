@@ -8,4 +8,5 @@ gem 'nokogiri'
 gem 'awesome_print', :require => 'ap'
 gem 'activesupport'
 gem 'mail'
+gem 'pry'
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'awesome_print'
 require 'mail'
-Dir[File.join(File.dirname(__FILE__), 'lib', '**', '*.rb')].each { |f| require f }
+require './boot'
 
 def grab_output
   tmp_out = $stdout
