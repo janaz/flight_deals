@@ -18,8 +18,10 @@ end
 to_email = ARGV.shift
 keywords = ARGV
 
+@deals = FlightDeals.specials_to(*keywords)
+
 email_content = grab_output do
-  ap FlightDeals.specials_to(*keywords), :plain => true
+  ap @deals, :plain => true
 end
 
 Mail.deliver do
@@ -35,5 +37,5 @@ Mail.deliver do
     content_type 'text/html; charset=UTF-8'
     body "<pre style='font-size: 13px;'>\n#{email_content}\n</pre>\n"
   end
-end
+end unless @deals.empty
 puts email_content
